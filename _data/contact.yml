@@ -3,16 +3,21 @@
 - type: github
   icon: "fab fa-github"
 
-- type: twitter
-  icon: "fa-brands fa-x-twitter"
+- type: orcid
+  icon: "fab fa-orcid"
+  url: "https://orcid.org/0009-0000-7673-4519"
 
 - type: email
   icon: "fas fa-envelope"
   noblank: true # open link in current tab
 
-- type: rss
-  icon: "fas fa-rss"
-  noblank: true
+- type: linkein
+  icon: "fab fa-linkedin"
+  url: "https://linkedin.com/in/markus-de-koster-34309b241"
+
+#- type: rss
+#  icon: "fas fa-rss"
+#  noblank: true
 # Uncomment and complete the url below to enable more contact options
 #
 # - type: mastodon
