@@ -1,0 +1,81 @@
+- id: sdewes-2025
+  type: conference
+  kind: Archival Paper
+  title: Synthetic Topology Generation for Generalizable Machine Learning in Low Voltage Distribution Grids
+  venue: SDEWES 2025 - 20th Conference on Sustainable Development of Energy, Water and Environment Systems
+  authors: ["de Koster, M.", "Lehnen, P.", "Mack, P.", "Waffenschmidt, E.", "Stadler, I."]
+  thumb:
+  year: 2025
+  date_start: 2025-10-05
+  date_end: 2025-10-10
+  abstract: Generating synthetic power grids for training of machine learning models that can generalize to unseen topologies requires more than replication of existing real-world grids. Instead, representative structures that capture real-world properties while at the same time exhibiting high variance are crucial for effective model training. In this paper, a probabilistic method for generating synthetic low voltage distribution grids is proposed. The method employs Markov chains to mimic realistic structures and assigns attributes to nodes and edges based on configurable probability distributions. The resulting grids are validated using load flow calculations and through comparison of key graph-theoretic metrics.
+
+- id: cired-2025
+  type: conference
+  title: Optimal Placement of Power Quality Monitors for Enhanced Observability with Fewer Devices
+  venue: CIRED 2025 - 28th International Conference on Electricity Distribution
+  authors: ["de Koster, M.", "Lehnen, P.", "Mack, P.", "Waffenschmidt, E.", "Stadler, I.", "Bkira, A."]
+  thumb: /assets/images/geneva.jpg
+  date_start: 2025-06-16
+  date_end: 2025-06-19
+  doi:
+  internal_url: /posts/cired/
+  pdf:
+  code:
+  abstract: This paper presents a power quality monitor placement method that balances observability with minimal measurement devices. The approach constructs an affinity matrix capturing how transients, harmonics, and voltage sags propagate through the network. By aggregating voltage and current data under varying thresholds, a scree-plot analysis using singular value decomposition identifies the optimal number of monitors. Tests on multiple grids demonstrate that only a few power quality monitors can capture the dominant variance. Experimental results confirm improved harmonic state estimation when voltage monitors are placed at nodes far from strong voltage sources and on less supported feeders and the opposite for current monitors. This method considers various disturbance types, downstream tasks and scales more efficiently than existing methods.
+
+- id: zukunft-2025
+  title: Zustandsschätzung der Spannungsqualität im Microgrid mithilfe eines digitalen Zwillings und neuronaler Netze
+  type: conference
+  venue: Zukünftige Stromnetze 2025
+  authors: ["de Koster, M.", "Mack, P.", "Lehnen, P.", "Waffenschmidt, E.", "Stadler, I."]
+  date_start: 2025-01-29
+  date_end: 2025-01-30
+
+- id: netzimpedanz-pq-monitoring-2024
+  title: Aktuelle Methoden zur Überwachung der Spannungsqualität
+  type: conference
+  venue: 7. Fachkonferenz des Interessenverbandes Netzimpedanz
+  authors: ["de Koster, M."]
+  thumb:
+  date_start: 2024-09-05
+  abstract:
+
+- id: energies-2024
+  type: journal
+  title: Power Quality State Estimation for Distribution Grids Based on Physics-Aware Neural Networks—Harmonic State Estimation
+  authors: ["Mack, P.", "de Koster, M.", "Lehnen, P.", "Waffenschmidt, E.", "Stadler, I."]
+  venue: MDPI Energies
+  doi: 10.3390/en17215452
+  url: https://www.mdpi.com/1996-1073/17/21/5452
+  date_start: 2024-10-31
+  abstract: In the transition from traditional electrical energy generation with mainly linear sources to increasing inverter-based distributed generation, electrical power systems’ power quality requires new monitoring methods. Integrating a high penetration of distributed generation, which is typically located in medium- or low-voltage grids, shifts the monitoring tasks from the transmission to distribution layers. Compared to high-voltage grids, distribution grids feature a higher level of complexity. Monitoring all relevant nodes is operationally infeasible and costly. State estimation methods provide knowledge about unmeasured locations by learning a physical system’s non-linear relationships. This article examines a new flexible, close-to-real-time concept of harmonic state estimation using synchronized measurements processed in a neural network. A physics-aware approach enhances a data-driven model, taking into account the structure of the electrical network. An OpenDSS simulation generates data for model training and validation. Different load profiles for both training and testing were utilized to increase the variance in the data. The results of the presented concept demonstrate high accuracy compared to other methods for harmonic orders 1 to 20.
+
+- id: ma-pqse-2023
+  title: Power Quality State Estimation in Distribution Grids Based on Neural Networks
+  type: thesis
+  authors: [ "de Koster, M." ]
+  date_start: 2023-10-30
+  thumb:
+  abstract: This thesis explores the suitability of physics-aware neural networks for power quality state estimation in distribution grids. For that, power quality data was generated in a simulated environment and used for training and evaluation of different neural network models. Comprehensive data analyses were carried out, focusing on optimal representa- tions and processing of power quality data for neural network applications. Comparative assessments with traditional fully connected architectures demonstrated the superior capa- bilities of physics-aware models, which utilize the physical grid structure as a regularization mechanism. Despite increased computational complexity, effective methods were identified to address challenges posed by deep architectures and sparse connectivity. Best performing models achieved a mean squared error loss of 4 × 10 −6, significantly outperforming tradi- tional models with a loss of 1.1 × 10 −5 . The results strongly indicate that physics-aware neural networks are suitable for power quality state estimation tasks. Promising avenues for expanding developed models include incorporation of physical laws in the learning process, potentially further constraining the network to physically possible states.
+
+- id: cired-2023
+  title: Decentralized grid control using power grid state estimation
+  type: conference
+  venue: CIRED 2023 - 27th International Conference on Electricity Distribution
+  authors: [ "Waffenschmidt, E.", "de Koster, M.", "Hotz, C.", "Baum, S.", "Stadler, I." ]
+  thumb:
+  date_start: 2023-06-12
+  date_end: 2023-06-15
+  doi: 10.1049/icp.2023.0551
+  pdf:
+  abstract: A decentralized power grid control using a Swarm-Grid approach is proposed. It includes an exchange of measured data between components and a grid state estimation. Here, methods for calculating the current grid state and for generating pseudo measurements in case of non-convergence of the algorithm are proposed. Additionally, worst-case assumptions are presented which help to achieve reasonable estimates of the unknown grid voltages and currents used for the decentralized grid control. Finally the impact of unknown phase information is derived.
+
+- id: ba-smart-meter-2021
+  type: thesis
+  venue: Technische Hochschule Köln, Fraunhofer Institut für Solare Energiesysteme ISE
+  title: Dezentrales Energiemanagement innerhalb der BSI Smart Meter Gateway Infrastruktur zur Prävention von Netzengpässen
+  authors: [ "de Koster, M." ]
+  date_start: 2021-05-20
+  thumb:
+  abstract: Bachelor's thesis - abstract not available.
