@@ -5,9 +5,13 @@
   # My personal website
 </div>
 
-Based on [Jekyll][jekyllrb] and hosted on [GitHub Pages][ghpages].
+Based on [Jekyll](https://github.com/jekyll/jekyll) and hosted on [GitHub Pages](https://docs.github.com/en/pages) and on [de-koster.com](https://de-koster.com).
 
 ## Upcoming Blog Posts
+
+The website will feature blog posts with updates on my research and other topics of interest.
+
+Upcoming posts include (this is constrained by my time, so it might take a while):
 
 - Optimal placement of power quality monitors in low voltage distribution grids (CIRED 2025)
 - Synthetic Topology Generation for Generalizable Machine Learning in Low Voltage Distribution Grids (SDEWES 2025)
@@ -17,7 +21,7 @@ Based on [Jekyll][jekyllrb] and hosted on [GitHub Pages][ghpages].
 
 ### Third-Party Assets
 
-This project is built on the [Jekyll][jekyllrb] ecosystem and some [great libraries][lib], and is developed using [VS Code][vscode] as well as tools provided by [JetBrains][jetbrains] under a non-commercial open-source software license.
+This project is built on the [Jekyll](https://github.com/jekyll/jekyll) ecosystem using the [chirpy theme](https://github.com/cotes2020/jekyll-theme-chirpy)
 
 
 ## Build
