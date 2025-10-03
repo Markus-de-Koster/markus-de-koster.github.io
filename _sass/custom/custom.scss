@@ -4,7 +4,7 @@
 article.card.pub-card {
   background-color: var(--card-bg, #ffffff);
   border-color: var(--card-border-color, #333333);
-  color: var(--text-color, #222);
+  color: var(--text-color, #222222);
 }
 
 /* Text inside the card should inherit */
@@ -18,7 +18,7 @@ article.card.pub-card i {
 article.card.pub-card .btn-outline-secondary,
 article.card.pub-card .btn-outline-dark {
   border-color: var(--card-border-color, #333333);
-  color: var(--text-color, #222);
+  color: var(--text-color, #222222);
 }
 article.card.pub-card .btn-outline-secondary:hover,
 article.card.pub-card .btn-outline-dark:hover {
@@ -28,13 +28,13 @@ article.card.pub-card .btn-outline-dark:hover {
 /* Explicit dark-mode overrides (Chirpy toggles [data-mode="dark"]) */
 [data-mode="dark"] article.card.pub-card {
   background-color: var(--card-bg, #1f1f1f);
-  border-color: var(--card-border-color, #333);
-  color: var(--text-color, #ddd);
+  border-color: var(--card-border-color, #333333);
+  color: var(--text-color, #dddddd);
 }
 [data-mode="dark"] article.card.pub-card .btn-outline-secondary,
 [data-mode="dark"] article.card.pub-card .btn-outline-dark {
-  border-color: var(--card-border-color, #333);
-  color: var(--text-color, #ddd);
+  border-color: var(--card-border-color, #333333);
+  color: var(--text-color, #dddddd);
 }
 [data-mode="dark"] article.card.pub-card .btn-outline-secondary:hover,
 [data-mode="dark"] article.card.pub-card .btn-outline-dark:hover {
