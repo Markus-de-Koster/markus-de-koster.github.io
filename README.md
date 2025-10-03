@@ -7,17 +7,9 @@
 
 Based on [Jekyll](https://github.com/jekyll/jekyll) and hosted on [GitHub Pages](https://docs.github.com/en/pages) and on [de-koster.com](https://de-koster.com).
 
-## Upcoming Blog Posts
-
-The website will feature blog posts with updates on my research and other topics of interest.
-
-Upcoming posts include (this is constrained by my time, so it might take a while):
-
-- Optimal placement of power quality monitors in low voltage distribution grids (CIRED 2025)
-- Synthetic Topology Generation for Generalizable Machine Learning in Low Voltage Distribution Grids (SDEWES 2025)
-- Evaluation of the survey on all-gender-toilets at TH Köln, Germany (2020)
-
 ## Credits
+
+The overall structure and some pages are inspired by: [https://github.com/jeertmans/jeertmans.github.io](https://github.com/jeertmans/jeertmans.github.io)
 
 ### Third-Party Assets
 

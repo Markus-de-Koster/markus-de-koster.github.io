@@ -32,8 +32,8 @@ order: 1
 </div>
 
 <p>
-  Researcher in machine learning with a background in electrical power systems and computer science.
-  Research on the intersection of these fields is my passion, and I love diving deep into the mathematics and algorithms.
+  I’m Markus, a PhD Student working at TH Köln in the field of Machine Learning (ML) for Power Systems.
+  Research on the intersection of electrical power systems and computer science is my passion, and I love diving deep into the mathematics and algorithms.
 </p>
 
 ---
