@@ -1,0 +1,57 @@
+/* --- Publications cards: dark-mode support --- */
+
+/* Base colors use theme variables when available */
+article.card.pub-card {
+  background-color: var(--card-bg, #ffffff);
+  border-color: var(--card-border-color, #333333);
+  color: var(--text-color, #222);
+}
+
+/* Text inside the card should inherit */
+article.card.pub-card .h5,
+article.card.pub-card .small,
+article.card.pub-card i {
+  color: inherit;
+}
+
+/* Buttons on cards: outline variants that adapt */
+article.card.pub-card .btn-outline-secondary,
+article.card.pub-card .btn-outline-dark {
+  border-color: var(--card-border-color, #333333);
+  color: var(--text-color, #222);
+}
+article.card.pub-card .btn-outline-secondary:hover,
+article.card.pub-card .btn-outline-dark:hover {
+  background-color: var(--card-hover-bg, rgba(0,0,0,0.03));
+}
+
+/* Explicit dark-mode overrides (Chirpy toggles [data-mode="dark"]) */
+[data-mode="dark"] article.card.pub-card {
+  background-color: var(--card-bg, #1f1f1f);
+  border-color: var(--card-border-color, #333);
+  color: var(--text-color, #ddd);
+}
+[data-mode="dark"] article.card.pub-card .btn-outline-secondary,
+[data-mode="dark"] article.card.pub-card .btn-outline-dark {
+  border-color: var(--card-border-color, #333);
+  color: var(--text-color, #ddd);
+}
+[data-mode="dark"] article.card.pub-card .btn-outline-secondary:hover,
+[data-mode="dark"] article.card.pub-card .btn-outline-dark:hover {
+  background-color: var(--card-hover-bg, #2a2a2a);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;      /* row gap, column gap */
+  align-items: center;
+}
+.meta__item {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.25;
+}
+.meta__item i {
+  margin-right: 0.35rem;  /* stable icon–text spacing */
+}
