@@ -24,7 +24,7 @@ order: 3
     {% else              %}{% assign _icon='fas fa-shapes' %}
   {% endcase %}
 
-<article class="card my-3 shadow-sm">
+<article class="card pub-card my-4 shadow-sm">
   <div class="card-body">
     <div class="row align-items-start">
       <!-- LEFT: icon only -->
@@ -35,24 +35,25 @@ order: 3
       <div class="col-md-8">
         <h3 class="h5 mb-1">{{ p.title }}</h3>
         <div class="small mb-1">{{ p.authors | join: ", " }}</div>
-        <div class="small d-flex align-items-center flex-wrap">
-          <div class="d-flex align-items-center flex-wrap">
-            {% if p.venue %}
-              <span class="mr-3"><i class="fas fa-landmark" aria-hidden="true"></i> {{ p.venue }} </span> 
-            {% endif %}
-            {% if p.date_start and p.date_end %}
-              <span>
-                <i class="fas fa-calendar-alt m-lg-1" aria-hidden="true"></i> 
-                {{ p.date_start | date: "%b %-d, %Y" }} – {{ p.date_end | date: "%b %-d, %Y" }}
-              </span>
-            {% elsif p.date_start %}
-              <span>
-                <i class="fas fa-calendar-alt m-lg-1" aria-hidden="true"></i> 
-                {{ p.date_start | date: "%b %-d, %Y" }}
-              </span>
-            {% endif %}
-          </div>
-        </div>
+        <div class="small meta">
+        {% if p.venue %}
+          <span class="meta__item">
+            <i class="fas fa-landmark" aria-hidden="true"></i>
+            {{ p.venue }}
+          </span>
+        {% endif %}
+        {% if p.date_start and p.date_end %}
+          <span class="meta__item">
+            <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+            {{ p.date_start | date: "%b %-d, %Y" }} – {{ p.date_end | date: "%b %-d, %Y" }}
+          </span>
+        {% elsif p.date_start %}
+          <span class="meta__item">
+            <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+            {{ p.date_start | date: "%b %-d, %Y" }}
+          </span>
+        {% endif %}
+      </div>
         {% if p.abstract %}
           <details class="mt-2"><summary>Abstract</summary>{{ p.abstract }}</details>
         {% endif %}
