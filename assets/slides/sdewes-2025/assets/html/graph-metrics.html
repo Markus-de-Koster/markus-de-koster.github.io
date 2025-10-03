@@ -1,0 +1,325 @@
+<div class="gmw-root" id="gmw-root">
+  <div class="gmw-layout">
+    <!-- Left: two graphs -->
+    <div class="gmw-graphs">
+      <div class="gmw-graph-card">
+        <div class="gmw-graph-title">Radial</div>
+        <svg id="svg-radial" viewBox="0 0 520 260" class="gmw-svg" aria-label="Radial graph"></svg>
+      </div>
+      <div class="gmw-graph-card">
+        <div class="gmw-graph-title">Clustered</div>
+        <svg id="svg-clustered" viewBox="0 0 520 260" class="gmw-svg" aria-label="Clustered graph"></svg>
+      </div>
+    </div>
+
+    <!-- Middle: controls -->
+    <div class="gmw-controls">
+      <button class="gmw-btn" data-mode="diameter">Diameter</button>
+      <button class="gmw-btn" data-mode="clustering">Clustering</button>
+      <button class="gmw-btn" data-mode="avgdeg">Node&nbsp;degree</button>
+    </div>
+
+    <!-- Right: mode + short note + values -->
+    <div class="gmw-expl">
+      <div class="gmw-mode" id="gmw-mode">Diameter</div>
+      <div class="gmw-note" id="gmw-note">Longest shortest path</div>
+      <div class="gmw-stats">
+        <div><span class="gmw-stat-name">Radial:</span> <span id="stat-radial"></span></div>
+        <div><span class="gmw-stat-name">Clustered:</span> <span id="stat-clustered"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .gmw-root {
+    --edge: #8a8f99;
+    --path: #d11a1a;   /* the only colored element */
+    --ink: #111;
+    --muted: #555;
+    background: transparent;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial;
+    color: var(--ink);
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 8px 4px;
+  }
+
+  .gmw-layout {
+    display: grid;
+    grid-template-columns: 1.25fr 0.55fr 0.9fr;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .gmw-graphs {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .gmw-graph-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 8px 10px 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    background: #fff;
+  }
+
+  .gmw-graph-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--muted);
+    margin: 2px 0 6px 2px;
+  }
+  .gmw-svg { width: 100%; height: 210px; }
+
+  .gmw-controls {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 14px;
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    background: #fff;
+  }
+  .gmw-btn {
+    font-size: 18px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #cfcfcf;
+    background: #f6f6f6;
+    cursor: pointer;
+    transition: transform 0.04s ease, background 0.2s ease, border-color 0.2s ease;
+  }
+  .gmw-btn:hover { background: #ececec; }
+  .gmw-btn.gmw-active { background: #e5e5e5; border-color: #bdbdbd; }
+
+  .gmw-expl {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    background: #fff;
+    display: grid;
+    gap: 8px;
+  }
+  .gmw-mode { font-size: 22px; font-weight: 700; letter-spacing: 0.2px; }
+  .gmw-note { font-size: 18px; color: var(--muted); }
+  .gmw-stats { margin-top: 6px; font-size: 18px; display: grid; gap: 6px; }
+  .gmw-stat-name { display: inline-block; width: 105px; color: var(--muted); }
+
+  /* Minimal SVG styling (grayscale except path) */
+  .edge { stroke: var(--edge); stroke-width: 4; opacity: 0.95; }
+  .edge.path { stroke: var(--path); stroke-width: 6; opacity: 1; }
+  .node { fill: #ffffff; stroke: #111; stroke-width: 3; }
+  .node.emph { stroke-width: 5; }
+  .vlabel { font-size: 18px; font-weight: 700; fill: #111; dominant-baseline: middle; }
+</style>
+
+<script>
+(() => {
+  // ---------- graph utilities ----------
+  function buildAdj(nodes, edges) {
+    const adj = new Map(nodes.map(n => [n, new Set()]));
+    edges.forEach(([u,v]) => { adj.get(u).add(v); adj.get(v).add(u); });
+    return adj;
+  }
+  function shortestPath(adj, s, t) {
+    const q = [s], prev = new Map([[s,null]]);
+    while (q.length) {
+      const u = q.shift();
+      if (u === t) break;
+      for (const v of adj.get(u)) if (!prev.has(v)) { prev.set(v,u); q.push(v); }
+    }
+    if (!prev.has(t)) return null;
+    const p = []; for (let x=t; x!==null; x=prev.get(x)) p.push(x); return p.reverse();
+  }
+  function graphDiameter(nodes, adj) {
+    let best = { length: -1, path: [] };
+    for (let i=0;i<nodes.length;i++) for (let j=i+1;j<nodes.length;j++) {
+      const p = shortestPath(adj, nodes[i], nodes[j]);
+      if (!p) continue;
+      const d = p.length-1;
+      if (d > best.length) best = { length: d, path: p };
+    }
+    return best;
+  }
+  function localClustering(u, adj) {
+    const nbr = Array.from(adj.get(u)); const k = nbr.length;
+    if (k < 2) return 0;
+    let links = 0;
+    for (let i=0;i<k;i++) for (let j=i+1;j<k;j++) if (adj.get(nbr[i]).has(nbr[j])) links++;
+    return (2*links)/(k*(k-1));
+  }
+  const degree = (u, adj) => adj.get(u).size;
+
+  // ---------- graphs ----------
+  const radial = {
+    name: 'radial',
+    nodes: [0,1,2,3,4,5,6],
+    edges: [[0,1],[1,2],[1,4],[2,3],[4,5],[5,6]],
+    positions: { 0:[60,90], 1:[160,90], 2:[260,90], 3:[360,90], 4:[260,180], 5:[360,180], 6:[460,180], }
+  };
+  const clustered = {
+    name: 'clustered',
+    nodes: [0,1,2,3,4,5,6],
+    edges: [[0,1],[1,2],[1,4],[2,3],[4,5],[5,6],[2,6],[3,6]],
+    positions: { 0:[60,90], 1:[160,90], 2:[260,90], 3:[380,90], 4:[180,180], 5:[290,180], 6:[420,160], }
+  };
+
+  // ---------- rendering ----------
+  function drawGraph(svg, graph) {
+    const { nodes, edges, positions } = graph;
+    const adj = buildAdj(nodes, edges);
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+    graph._edgeElems = [];
+    for (const [u,v] of edges) {
+      const [x1,y1] = positions[u], [x2,y2] = positions[v];
+      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',x1); line.setAttribute('y1',y1);
+      line.setAttribute('x2',x2); line.setAttribute('y2',y2);
+      line.setAttribute('class','edge'); line.dataset.u=u; line.dataset.v=v;
+      svg.appendChild(line); graph._edgeElems.push(line);
+    }
+
+    graph._nodeElems = new Map();
+    graph._valueLabels = new Map();
+
+    for (const u of nodes) {
+      const [x,y] = positions[u];
+      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      g.setAttribute('data-node', u);
+
+      const circ = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      circ.setAttribute('cx',x); circ.setAttribute('cy',y);
+      circ.setAttribute('r',18); circ.setAttribute('class','node');
+      g.appendChild(circ);
+
+      const vlabel = document.createElementNS('http://www.w3.org/2000/svg','text');
+      vlabel.setAttribute('x', x + 26); vlabel.setAttribute('y', y - 20);
+      vlabel.setAttribute('class', 'vlabel');
+      vlabel.style.visibility = 'hidden'; vlabel.textContent = '';
+      g.appendChild(vlabel);
+
+      svg.appendChild(g);
+      graph._nodeElems.set(u, circ);
+      graph._valueLabels.set(u, vlabel);
+    }
+    graph._adj = adj;
+  }
+
+  function clearHighlights(graph) {
+    graph._edgeElems.forEach(e => e.setAttribute('class','edge'));
+    graph._nodeElems.forEach(node => { node.setAttribute('class','node'); node.setAttribute('r',18); });
+    graph._valueLabels.forEach(l => { l.style.visibility='hidden'; l.textContent=''; });
+  }
+
+  function setDiameterMode(graph) {
+    clearHighlights(graph);
+    const diam = graphDiameter(graph.nodes, graph._adj);
+    // emphasize nodes on path (stroke width only), color only for the path edges
+    for (let i=0;i<diam.path.length;i++) {
+      const u = diam.path[i];
+      const node = graph._nodeElems.get(u);
+      node.setAttribute('class','node emph');
+      if (i < diam.path.length-1) {
+        const v = diam.path[i+1];
+        for (const e of graph._edgeElems) {
+          const uu=+e.dataset.u, vv=+e.dataset.v;
+          if ((uu===u && vv===v) || (uu===v && vv===u)) e.setAttribute('class','edge path');
+        }
+      }
+    }
+    return diam.length;
+  }
+
+  function setClusteringMode(graph) {
+    clearHighlights(graph);
+    const values = new Map();
+    let minV=Infinity, maxV=-Infinity;
+    for (const u of graph.nodes) {
+      const c = localClustering(u, graph._adj);
+      values.set(u,c); if (c<minV) minV=c; if (c>maxV) maxV=c;
+    }
+    const scale = v => 16 + (maxV===minV ? 0 : (v-minV)/(maxV-minV)) * 14;
+    graph._nodeElems.forEach((node,u) => {
+      const v = values.get(u);
+      node.setAttribute('class','node emph');
+      node.setAttribute('r', scale(v));
+      const lab = graph._valueLabels.get(u);
+      lab.textContent = v.toFixed(2);     // numbers only
+      lab.style.visibility = 'visible';
+    });
+    // return average local clustering (include zeros)
+    const avg = graph.nodes.reduce((s,u)=>s+values.get(u),0) / graph.nodes.length;
+    return avg;
+  }
+
+  function setAverageDegreeMode(graph) {
+    clearHighlights(graph);
+    const values = new Map();
+    let minV=Infinity, maxV=-Infinity;
+    for (const u of graph.nodes) {
+      const d = degree(u, graph._adj);
+      values.set(u,d); if (d<minV) minV=d; if (d>maxV) maxV=d;
+    }
+    const scale = v => 16 + (maxV===minV ? 0 : (v-minV)/(maxV-minV)) * 14;
+    graph._nodeElems.forEach((node,u) => {
+      const v = values.get(u);
+      node.setAttribute('class','node emph');
+      node.setAttribute('r', scale(v));
+      const lab = graph._valueLabels.get(u);
+      lab.textContent = String(v);        // degree as plain number
+      lab.style.visibility = 'visible';
+    });
+    const avg = graph.nodes.reduce((s,u)=>s+values.get(u),0) / graph.nodes.length;
+    return avg;
+  }
+
+  // ---------- mount & interaction ----------
+  const svgRadial = document.getElementById('svg-radial');
+  const svgClustered = document.getElementById('svg-clustered');
+  drawGraph(svgRadial, radial);
+  drawGraph(svgClustered, clustered);
+
+  const modeEl = document.getElementById('gmw-mode');
+  const noteEl = document.getElementById('gmw-note');
+  const statR = document.getElementById('stat-radial');
+  const statC = document.getElementById('stat-clustered');
+  const btns = Array.from(document.querySelectorAll('.gmw-btn'));
+
+  function activate(mode) {
+    btns.forEach(b => b.classList.toggle('gmw-active', b.dataset.mode === mode));
+    if (mode === 'diameter') {
+      modeEl.textContent = 'Diameter';
+      noteEl.textContent = 'Longest shortest path';
+      const d1 = setDiameterMode(radial);
+      const d2 = setDiameterMode(clustered);
+      statR.textContent = d1.toString();
+      statC.textContent = d2.toString();
+    } else if (mode === 'clustering') {
+      modeEl.textContent = 'Avg. clustering';
+      noteEl.textContent = 'Mean local coefficient';
+      const c1 = setClusteringMode(radial);
+      const c2 = setClusteringMode(clustered);
+      statR.textContent = c1.toFixed(2);
+      statC.textContent = c2.toFixed(2);
+    } else {
+      modeEl.textContent = 'Avg. degree';
+      noteEl.textContent = 'Mean incident edges';
+      const k1 = setAverageDegreeMode(radial);
+      const k2 = setAverageDegreeMode(clustered);
+      statR.textContent = k1.toFixed(2);
+      statC.textContent = k2.toFixed(2);
+    }
+  }
+
+  // default
+  activate('diameter');
+  btns.forEach(b => b.addEventListener('click', () => activate(b.dataset.mode)));
+})();
+</script>

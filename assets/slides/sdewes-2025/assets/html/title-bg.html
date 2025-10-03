@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      html, body, #host { margin:0; height:100%; width:100%; }
+      #host { position:relative; }
+    </style>
+    <script type="module">
+      import { attachGraphGrowthCanvas } from "../js/graph-growth-canvas.js";
+      window.addEventListener("DOMContentLoaded", () => {
+        const host = document.getElementById("host");
+        attachGraphGrowthCanvas(host, { theme: "light" });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="host" class="canvas-bg"></div>
+  </body>
+</html>

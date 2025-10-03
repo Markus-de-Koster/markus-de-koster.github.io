@@ -1,0 +1,160 @@
+.quarto-title-author {
+  font-size: 1.6rem;
+  color: #555555
+}
+
+
+.fade-bottom {
+  /* Standard */
+  mask-image: linear-gradient(to bottom,
+                              rgba(0,0,0,1) 0%,
+                              rgba(0,0,0,1) 85%,
+                              rgba(0,0,0,0) 100%);
+}
+
+section[data-auto-animate] {
+  --r-auto-animate-unmatched: fade;
+}
+
+.img-viewport .r-stack img {
+  display: block;
+  width: 100%;                /* fixed to column width */
+  height: auto;               /* keep aspect ratio */
+  object-fit: contain;
+  object-position: top;       /* top-align the image */
+  margin: 0;
+}
+
+.side-notes {
+  font-size: 1em;
+}
+
+/* === Layout: keep three columns on one row and center content === */
+.reveal .columns {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: nowrap;         /* avoid wrapping into a second row on wide screens */
+}
+.reveal .column {
+  display: flex;
+  justify-content: center;
+}
+
+/* Each column’s inner wrapper */
+.agenda-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Size variable for circles (responsive) */
+:root {
+  --agenda-size: min(18rem, 26vw);
+}
+
+/* On narrower viewports, shrink circles so three still fit one row */
+@media (max-width: 1200px) {
+  :root { --agenda-size: min(15rem, 28vw); }
+}
+@media (max-width: 1000px) {
+  :root { --agenda-size: min(13rem, 30vw); }
+}
+
+/* Headings centered directly below circles */
+.reveal .slides h4 {
+  text-align: center;
+  margin: 0 0 .5rem 0;
+  width: var(--agenda-size);
+}
+
+/* === Circular preview container === */
+.agenda-circle {
+  width: var(--agenda-size);
+  height: var(--agenda-size);
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 8px 24px rgba(0,0,0,.15);
+  transition: filter .25s ease, opacity .25s ease, transform .25s ease, box-shadow .25s ease;
+  background: transparent;
+}
+
+/* Images: show whole graphic (contain), not cropped */
+.agenda-circle .agenda-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;    /* ensures the full SVG is visible */
+  border: 0;
+}
+
+/* === Iframe “mini page” thumbnail ===
+   Strategy: render iframe larger than the circle and scale it down.
+   This effectively “zooms out” to show more of the page.
+*/
+.agenda-circle .agenda-thumb {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 0;
+
+  /* scale factor: smaller => shows more of the page (zooms out) */
+  --thumb-scale: 1.1;
+
+  /* Layout size before transform: larger than the circle by 1/scale */
+  width: calc(100% / var(--thumb-scale));
+  height: calc(100% / var(--thumb-scale));
+
+  /* Center the unscaled iframe, then scale from its center */
+  transform: translate(-50%, -50%) scale(var(--thumb-scale));
+  transform-origin: 50% 50%;
+
+  pointer-events: none; /* your fragment rules re-enable this when active */
+}
+
+
+.reveal .slides .agenda-head {
+  margin-top: 1.5rem;
+}
+
+
+/* === Fragment states === */
+.reveal .slides .fragment.agenda-circle,
+.reveal .slides .fragment + .agenda-circle { /* keep conservative selector for robustness */
+  filter: grayscale(100%) saturate(80%);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* Headings share the same fragment index; dim them too when not current */
+.reveal .slides .fragment:not(.current-fragment) h4,
+.reveal .slides h4.fragment:not(.current-fragment) {
+  opacity: 0.65;
+}
+
+/* Visible (already revealed) but not the current one */
+.reveal .slides .fragment.agenda-circle.visible {
+  filter: grayscale(100%) saturate(80%);
+  opacity: 0.65;
+}
+
+/* Actively focused fragment */
+.reveal .slides .fragment.agenda-circle.current-fragment {
+  filter: none;
+  opacity: 1;
+  transform: scale(1.03);
+  box-shadow: 0 12px 36px rgba(0,0,0,.25);
+  pointer-events: auto;   /* enable interaction on the active preview */
+}
+
+/* Enable interaction inside the active iframe */
+.reveal .slides .fragment.agenda-circle.current-fragment .agenda-thumb {
+  pointer-events: auto;
+}
+
+/* Optional: subtle ring on active */
+.reveal .slides .fragment.agenda-circle.current-fragment {
+  outline: 6px solid rgba(255,255,255,.75);
+  outline-offset: 6px;
+}

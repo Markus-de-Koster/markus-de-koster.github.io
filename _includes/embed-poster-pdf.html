@@ -1,0 +1,14 @@
+{% assign url = include.url %}
+<iframe
+  src="{{ url | relative_url }}"
+  class="poster-pdf"
+  loading="lazy"
+></iframe>
+
+<style>
+.poster-pdf {
+  width: 100%;
+  aspect-ratio: 1 / 1.4142;
+  border: 0;
+}
+</style>

@@ -1,0 +1,222 @@
+<div class="ptl-root" id="ptl-root">
+  <div class="ptl-controls" role="group" aria-label="Metric">
+    <button class="ptl-btn" data-metric="diameter">Diameter</button>
+    <button class="ptl-btn" data-metric="avgDeg">Avg. degree</button>
+    <button class="ptl-btn" data-metric="avgClust">Avg. clustering</button>
+  </div>
+
+  <div class="ptl-wrap" tabindex="0" aria-label="Graph properties table">
+    <table class="ptl-table">
+      <thead>
+        <tr>
+          <th class="categ">Category</th>
+          <th class="name">Name</th>
+          <th class="num">Nodes</th>
+          <th class="num" id="ptl-metric-th">Diameter</th>
+        </tr>
+      </thead>
+      <tbody id="ptl-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+  .ptl-root{
+    --ink: var(--r-main-color, #111);
+    --muted:#666;
+    --line:#e5e7eb;
+    --bg:#fff;
+    --accent: var(--r-link-color, #1769aa);
+    --hi: #e7f0ff;          /* mild blue for selection */
+    --hi-head: #dfeaff;      /* slightly stronger for group header */
+    color:var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial;
+    width:100%; max-width:1400px; margin:0 auto; padding:6px 4px;
+  }
+  .ptl-controls{display:flex; gap:10px; margin-bottom:8px}
+  .ptl-btn{font-size:16px; padding:8px 12px; border:1px solid #cfcfcf; background:#f6f6f6; border-radius:10px; cursor:pointer}
+  .ptl-btn:hover{background:#ececec}
+  .ptl-btn.active{background:#e5e5e5; border-color:#bdbdbd}
+
+  .ptl-wrap{
+    height:72vh;              /* increased height */
+    overflow:auto;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    box-shadow:0 1px 6px rgba(0,0,0,.06)
+  }
+  .ptl-table{width:100%; border-collapse:separate; border-spacing:0; font-size:16px}
+  thead th{
+    position:sticky; top:0; z-index:1;
+    background:#f7f7f8; border-bottom:1px solid var(--line);
+    text-align:left; font-weight:600; padding:10px 12px
+  }
+  th.categ{width:130px} th.name{min-width:200px} th.num{text-align:right}
+  tbody td{padding:10px 12px; border-bottom:1px solid #f0f0f1; vertical-align:middle}
+  td.num{text-align:right; font-variant-numeric: tabular-nums lining-nums}
+
+  /* group header row */
+  tr.ghead td{
+    padding-top:16px; padding-bottom:6px;
+    font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted);
+    border-bottom:none; cursor:pointer;
+  }
+  tr.ghead.hi td{ background: var(--hi-head); color:#1f2a44 }
+
+  /* row highlight (click to toggle/select) */
+  tr.hi td{ background: var(--hi) }
+
+  /* metric cell with bar */
+  .mcell{min-width:220px}
+  .mrow{display:flex; align-items:center; gap:10px}
+  .mval{min-width:3ch}
+  .bar{position:relative; width:140px; height:8px; background:#e5e7eb; border-radius:999px; overflow:hidden}
+  .fill{position:absolute; inset:0 auto 0 0; width:0; background:var(--accent); border-radius:999px}
+</style>
+
+<script>
+(() => {
+  // --- Data subset as requested ---
+  const rows = [
+    // LV
+    { key:"cigre-lv", group:"LV", name:"CIGRE LV", graphs:1, nodes:44, edges:43, avgDeg:1.95, avgClust:0.00, diameter:23 },
+    { key:"kerber-vorstadt", group:"LV", name:"Kerber Vorstadt", graphs:1, nodes:386, edges:385, avgDeg:1.99, avgClust:0.00, diameter:95 },
+    { key:"dickert-lv", group:"LV", name:"Dickert LV", graphs:1, nodes:47, edges:46, avgDeg:1.96, avgClust:0.00, diameter:25 },
+
+    // MV/HV (selected)
+    { key:"ieee-89", group:"MV/HV", name:"IEEE 89", graphs:1, nodes:89, edges:206, avgDeg:4.63, avgClust:0.19, diameter:9 },
+    { key:"ieee-118", group:"MV/HV", name:"IEEE 118", graphs:1, nodes:118, edges:179, avgDeg:3.03, avgClust:0.17, diameter:14 },
+    { key:"trans-europe", group:"MV/HV", name:"Trans. Europe", graphs:1, nodes:9241, edges:14207, avgDeg:3.07, avgClust:0.10, diameter:91 },
+
+    // OGB Node
+    { key:"ogbn-proteins", group:"OGB Node", name:"proteins", graphs:1, nodes:132534, edges:39561252, avgDeg:597.0, avgClust:0.280, diameter:9 },
+    { key:"papers100m", group:"OGB Node", name:"papers100M", graphs:1, nodes:111059956, edges:1615685872, avgDeg:29.1, avgClust:0.085, diameter:25 },
+  ];
+  const order = ["LV","MV/HV","OGB Node"];
+
+  const state = {
+    metric: /** @type {"diameter"|"avgDeg"|"avgClust"} */ ("diameter"),
+    sel: new Set(),   // selected row keys
+  };
+
+  const body = document.getElementById('ptl-body');
+  const thMetric = document.getElementById('ptl-metric-th');
+
+  // Controls
+  document.querySelectorAll('.ptl-btn[data-metric]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      state.metric = /** @type any */(b.dataset.metric);
+      syncButtons(); render();
+    });
+  });
+
+  function syncButtons(){
+    document.querySelectorAll('.ptl-btn').forEach(b=>b.classList.remove('active'));
+    const el = document.querySelector(`.ptl-btn[data-metric="${state.metric}"]`);
+    if (el) el.classList.add('active');
+    thMetric.textContent =
+      state.metric === 'diameter' ? 'Diameter' :
+      state.metric === 'avgDeg'   ? 'Avg. degree' : 'Avg. clustering';
+  }
+
+  function numberFmt(n, metric){
+    const isInt = (metric === 'diameter');
+    return n.toLocaleString(undefined, { maximumFractionDigits: isInt ? 0 : 2 });
+  }
+
+  function metricDomain(metric){
+    const vals = rows.map(r=>r[metric]);
+    const min = Math.min(...vals), max = Math.max(...vals);
+    const pad = (max - min) * 0.05 || 1;
+    return { min: Math.max(0, min - pad), max: max + pad };
+  }
+
+  function barWidth(v, domain){
+    const x = Math.max(domain.min, Math.min(domain.max, v));
+    return ((x - domain.min)/(domain.max - domain.min))*100;
+  }
+
+  function toggleRowSelection(rowKey, additive){
+    if (!additive) state.sel.clear();               // plain click: single-select
+    if (state.sel.has(rowKey)) {
+      if (additive) state.sel.delete(rowKey);       // ctrl/cmd toggles
+      else state.sel.add(rowKey);                   // keep selected if plain click on already-selected
+    } else {
+      state.sel.add(rowKey);
+    }
+  }
+
+  function toggleGroupSelection(group, additive){
+    const keys = rows.filter(r=>r.group===group).map(r=>r.key);
+    if (!additive) state.sel.clear();               // plain click: single group
+    const allSelected = keys.every(k=>state.sel.has(k));
+    if (allSelected) {
+      // if additive and all are selected, remove them; if plain, ends with none
+      keys.forEach(k=>state.sel.delete(k));
+    } else {
+      keys.forEach(k=>state.sel.add(k));
+    }
+  }
+
+  function render(){
+    const metric = state.metric;
+    const domain = metricDomain(metric);
+
+    const groups = order.map(g => ({ group: g, rows: rows.filter(r=>r.group===g) }));
+    const frag = document.createDocumentFragment();
+
+    groups.forEach(({group, rows: rs})=>{
+      // group header (clickable)
+      const trh = document.createElement('tr');
+      trh.className = 'ghead';
+      trh.dataset.group = group;
+      const tdh = document.createElement('td'); tdh.colSpan = 4; tdh.textContent = group;
+      trh.appendChild(tdh);
+      // header highlight if all rows of the group are selected
+      const allSel = rs.length && rs.every(r=>state.sel.has(r.key));
+      if (allSel) trh.classList.add('hi');
+      trh.addEventListener('click', (ev)=>{
+        const additive = ev.ctrlKey || ev.metaKey;
+        toggleGroupSelection(group, additive);
+        render();
+      });
+      frag.appendChild(trh);
+
+      // data rows
+      rs.forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.dataset.key = r.key;
+        if (state.sel.has(r.key)) tr.classList.add('hi');
+
+        tr.addEventListener('click', (ev)=>{
+          const additive = ev.ctrlKey || ev.metaKey;  // Ctrl/Cmd for multi-select
+          toggleRowSelection(r.key, additive);
+          render();
+        });
+
+        const td1 = document.createElement('td'); td1.textContent = r.group; tr.appendChild(td1);
+        const td2 = document.createElement('td'); td2.textContent = r.name; td2.className='name'; tr.appendChild(td2);
+        const td3 = document.createElement('td'); td3.textContent = numberFmt(r.nodes, 'diameter'); td3.className='num'; tr.appendChild(td3);
+
+        const td4 = document.createElement('td'); td4.className='num mcell';
+        const wrap = document.createElement('div'); wrap.className='mrow';
+        const val = document.createElement('div'); val.className='mval'; val.textContent = numberFmt(r[metric], metric);
+        const bar = document.createElement('div'); bar.className='bar';
+        const fill = document.createElement('div'); fill.className='fill'; fill.style.width = barWidth(r[metric], domain) + '%';
+        bar.appendChild(fill); wrap.appendChild(val); wrap.appendChild(bar); td4.appendChild(wrap); tr.appendChild(td4);
+
+        frag.appendChild(tr);
+      });
+    });
+
+    // swap body
+    while (body.firstChild) body.removeChild(body.firstChild);
+    body.appendChild(frag);
+  }
+
+  // init
+  syncButtons();
+  render();
+})();
+</script>

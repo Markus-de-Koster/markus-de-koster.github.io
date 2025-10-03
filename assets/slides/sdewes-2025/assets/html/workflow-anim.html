@@ -1,0 +1,462 @@
+<div id="wf-root" class="wf-root" data-src="../images/workflow.svg">
+  <div class="wf-layout">
+    <!-- Left: algorithm -->
+    <div class="wf-left">
+      <div class="wf-pane-title">Algorithm</div>
+      <svg id="wf-left-svg" class="wf-left-svg" viewBox="1295 900 420 660" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto">
+            <path d="M0,0 L10,4 L0,8 Z" fill="#667085"></path>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <!-- Center: grid -->
+    <div class="wf-center">
+      <svg id="wf-grid" class="wf-grid" viewBox="1640 915 320 520" preserveAspectRatio="xMidYMid meet">
+        <g id="grid-static"></g>
+        <g id="grid-edges"></g>
+        <g id="grid-nodes"></g>
+        <g id="grid-labels"></g>
+      </svg>
+
+      <div class="wf-stepbar">
+        <button id="prevBtn" title="Prev (←/↑)">◀</button>
+        <div class="wf-steptext"><span id="stepNow">0</span> / <span id="stepMax">0</span></div>
+        <button id="nextBtn" title="Next (→/↓/Space)">▶</button>
+      </div>
+    </div>
+
+    <!-- Right: legend -->
+    <div class="wf-right">
+      <div class="wf-pane-title">Legend</div>
+      <svg id="wf-legend-svg" class="wf-legend-svg" viewBox="1930 900 380 560" preserveAspectRatio="xMinYMin meet"></svg>
+    </div>
+  </div>
+</div>
+
+<style>
+  .wf-root{
+    --hi: #e7f0ff; --hi-border:#bcd2ff;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  }
+  .wf-layout{ display:grid; grid-template-columns: 1fr 2.1fr 1.1fr; gap:16px; align-items:start; }
+  .wf-left, .wf-right{ border:1px solid #e5e7eb; border-radius:14px; background:#fff; padding:8px; box-shadow:0 1px 6px rgba(0,0,0,.06); }
+  .wf-center{ position:relative; border:1px solid #e5e7eb; border-radius:14px; background:#fff; padding:6px; box-shadow:0 1px 6px rgba(0,0,0,.06); }
+  .wf-pane-title{ font-size:14px; text-transform:uppercase; letter-spacing:.06em; color:#666; padding:2px 4px 8px; }
+
+  .wf-left-svg, .wf-legend-svg { width:100%; height:72vh; display:block; }
+  .wf-grid{ width:100%; height:76vh; display:block; }
+
+  /* algorithm boxes & highlight */
+  .wf-stepbox{ fill:#fff; stroke:#111; stroke-width:1; rx:4; ry:4; }
+  .wf-label{ fill:#111; font: 12px sans-serif; }
+  .wf-current .wf-stepbox{ fill:var(--hi); stroke:var(--hi-border); }
+  .wf-muted{ opacity:.28 }
+  .wf-flow{ stroke:#667085; stroke-width:1.25; fill:none; marker-end:url(#arrow); }
+
+  /* center graph */
+  #grid-edges path{ fill:none; /* keep original colors from source; do not override stroke */ }
+  #grid-edges path.draw{ stroke-dasharray: var(--len) var(--len); stroke-dashoffset: var(--len); animation: drawline .45s ease forwards; }
+  @keyframes drawline{ to{ stroke-dashoffset:0; } }
+  #grid-edges .dim{ opacity:.15 } /* temporary before “draw” */
+
+  /* node markers: single deduped square per junction */
+  .node{ fill:#fff; stroke:#1f2937; stroke-width:2.5; width:10px; height:10px; }
+  .node.active{ stroke-width:4 }
+  .node.inactive{ stroke-width:2; opacity:.9; stroke:#667085 }
+
+  /* step bar */
+  .wf-stepbar{ position:absolute; left:8px; right:8px; bottom:8px; display:flex; gap:8px; align-items:center; justify-content:center; }
+  .wf-stepbar button{ border:1px solid #cfcfcf; background:#f6f6f6; border-radius:10px; padding:6px 10px; cursor:pointer }
+  .wf-stepbar button:hover{ background:#ececec }
+  .wf-steptext{ font-size:14px; color:#444 }
+</style>
+
+<script>
+(function(){
+  const root = document.getElementById('wf-root');
+  const src  = root.getAttribute('data-src') || '../images/workflow.svg';
+
+  const leftSVG   = document.getElementById('wf-left-svg');
+  const legendSVG = document.getElementById('wf-legend-svg');
+
+  const gridSVG = document.getElementById('wf-grid');
+  const gStatic = document.getElementById('grid-static');
+  const gEdges  = document.getElementById('grid-edges');
+  const gNodes  = document.getElementById('grid-nodes');
+  const gLabels = document.getElementById('grid-labels');
+
+  const stepNow = document.getElementById('stepNow');
+  const stepMax = document.getElementById('stepMax');
+  const nextBtn = document.getElementById('nextBtn');
+  const prevBtn = document.getElementById('prevBtn');
+
+  // State
+  let steps = []; let current = 0;
+
+  const S = {
+    // deduped node registry: key -> {x,y,el,active}
+    nodes: new Map(),
+    // edges list in drawing order with geometry and original style preserved
+    edges: [],
+    // feeders found at the top (two short L/horizontal)
+    feeders: [],
+    // transformer circles (left/right)
+    tLeft: [], tRight: [],
+    // left algorithm items
+    leftItems: []
+  };
+
+  fetch(src).then(r=>r.text()).then(txt=>{
+    const doc = new DOMParser().parseFromString(txt, 'image/svg+xml');
+
+    // --------- LEFT: algorithm items + arrows
+    const labelsWanted = [
+      "Create Infinite Node",
+      "Sample Number of Feeders",
+      "for each feeder",                 // inserted
+      "Assign Feeder Structure",
+      "Insert Start Components",
+      "While active nodes:",
+      "Max depth exceeded?",
+      "Sample Branch Type",
+      "Apply Markov Transition",
+      "Insert Nodes and Edges,",
+      "add junctions to active nodes",
+      "Create Open Ring Nets",
+      "Return Graph"
+    ];
+
+    // Find existing step rect+text pairs by matching text values present in SVG
+    // Then inject "for each feeder" under "Sample Number of Feeders".
+    const presentTexts = Array.from(doc.querySelectorAll('text'));
+    function findText(t){ return presentTexts.find(el => (el.textContent||'').trim() === t); }
+    function nearestRect(y, xmin, xmax){
+      const rects = Array.from(doc.querySelectorAll('rect'));
+      let best=null, dy=1e9;
+      rects.forEach(r=>{
+        const x=+r.getAttribute('x'), h=+r.getAttribute('height')||0, yy=+r.getAttribute('y')||0;
+        if (x>=xmin && x<=xmax){ const d=Math.abs((yy+h/2)-y); if(d<dy){ dy=d; best=r; } }
+      });
+      return best;
+    }
+    const tmpItems = [];
+    ["Create Infinite Node","Sample Number of Feeders","Assign Feeder Structure","Insert Start Components",
+     "While active nodes:","Max depth exceeded?","Sample Branch Type","Apply Markov Transition",
+     "Insert Nodes and Edges,","add junctions to active nodes","Create Open Ring Nets","Return Graph"].forEach(lbl=>{
+       const t = findText(lbl); if(!t) return;
+       const r = nearestRect(+t.getAttribute('y'), 1320, 1600) || doc.createElementNS('http://www.w3.org/2000/svg','rect');
+       tmpItems.push({label:lbl, rect:r.cloneNode(true), text:t.cloneNode(true)});
+     });
+
+    // Insert synthetic "for each feeder" below "Sample Number of Feeders"
+    const afterIdx = tmpItems.findIndex(it=>it.label==="Sample Number of Feeders");
+    if (afterIdx>=0){
+      const base = tmpItems[afterIdx];
+      const br = base.rect, bt = base.text;
+      const ry = (+br.getAttribute('y')||0) + (+br.getAttribute('height')||30) + 30;
+      const rx = (+br.getAttribute('x')||1340);
+      const rw = (+br.getAttribute('width')||200), rh = (+br.getAttribute('height')||30);
+      const nr = makeSVG('rect', {x:rx, y:ry, width:rw, height:rh, class:'wf-stepbox'});
+      const nt = makeSVG('text', {x:+bt.getAttribute('x'), y:ry+rh/2+4, class:'wf-label'}, "for each feeder");
+      tmpItems.splice(afterIdx+1, 0, {label:"for each feeder", rect:nr, text:nt});
+    }
+
+    // Append to leftSVG and draw arrow lines between boxes
+    const boxes = [];
+    tmpItems.forEach(it=>{
+      const g = makeSVG('g', {class:'wf-item'});
+      const r = it.rect; r.setAttribute('class','wf-stepbox');
+      const t = it.text; t.setAttribute('class','wf-label');
+      g.appendChild(r); g.appendChild(t); leftSVG.appendChild(g);
+      S.leftItems.push(g);
+      boxes.push({g, x:+r.getAttribute('x'), y:+r.getAttribute('y'), w:+r.getAttribute('width'), h:+r.getAttribute('height')});
+    });
+    // arrows (down from center-bottom of i to center-top of i+1)
+    for(let i=0;i+1<boxes.length;i++){
+      const a = boxes[i], b = boxes[i+1];
+      const x1 = a.x + a.w/2, y1 = a.y + a.h;
+      const x2 = b.x + b.w/2, y2 = b.y;
+      const p = makeSVG('path', {d:`M ${x1} ${y1+2} L ${x2} ${y2-6}`, class:'wf-flow'});
+      leftSVG.appendChild(p);
+    }
+
+    // --------- RIGHT: legend (clone wide area; widen viewBox to avoid overlap)
+    const rightElems = Array.from(doc.querySelectorAll('*')).filter(el=>{
+      // keep items whose bbox left is >= 1930 (approx legend column)
+      const x = pickX(el); return x !== null && x >= 1930;
+    });
+    rightElems.forEach(el => legendSVG.appendChild(el.cloneNode(true)));
+
+    // --------- CENTER: grid extraction (paths, transformer, starting node, feeder tops)
+    const rects = Array.from(doc.querySelectorAll('rect'));
+    const circles = Array.from(doc.querySelectorAll('circle'));
+    const paths = Array.from(doc.querySelectorAll('path'));
+
+    // start square (small square near (1783, 969))
+    const startRect = rects.find(r => near(+r.getAttribute('x'),1783,3) && near(+r.getAttribute('y'),969,3) && (+r.getAttribute('width')||0) < 16);
+    if (startRect){ // clone style but we render as node marker later
+      S.startNode = {x:+startRect.getAttribute('x')+ (+startRect.getAttribute('width')||10)/2,
+                     y:+startRect.getAttribute('y')+ (+startRect.getAttribute('height')||10)/2};
+    }
+
+    // transformers (two pairs of circles around cx=1738 and 1835)
+    S.tLeft  = circles.filter(c => near(+c.getAttribute('cx'),1738,2) && (+c.getAttribute('r')||0)>=14).map(c=>c.cloneNode(true));
+    S.tRight = circles.filter(c => near(+c.getAttribute('cx'),1835,4) && (+c.getAttribute('r')||0)>=14).map(c=>c.cloneNode(true));
+    [...S.tLeft, ...S.tRight].forEach(c=>{ c.style.opacity=0; gStatic.appendChild(c); });
+
+    // grid paths within the middle box bounds
+    const mids = paths.filter(p=>{
+      const pts = extractCoords(p.getAttribute('d')||''); if(!pts.length) return false;
+      return pts.every(([x,y])=>x>=1640 && x<=1960 && y>=930 && y<=1380);
+    });
+
+    // feeder short segments close to top (two)
+    const feeders = mids.filter(p => (p.getAttribute('d')||'').match(/974\.7|975\./));
+    // order feeders left->right; we will start with RIGHT feeder as requested
+    feeders.sort((a,b)=> avgX(a)-avgX(b));
+    S.feeders = feeders;
+
+    // rest (deterministic document order)
+    const rest = mids.filter(p => !feeders.includes(p));
+    const ordered = [...feeders, ...rest];
+
+    // Build edge list with preserved style
+    S.edges = ordered.map(p=>{
+      const el = p.cloneNode(true); // keep stroke/fill/dash
+      el.classList.add('dim');
+      const segs = extractSegments(p.getAttribute('d')||'');
+      const len  = pathLenApprox(segs);
+      gEdges.appendChild(el);
+      return { el, segs, len, drawn:false };
+    });
+
+    // Label “Residential” at right feeder (make sure it’s visible when feeders appear)
+    const resText = makeSVG('text',{x: avgX(S.feeders[1])+8, y: 960, class:'wf-label'}, 'Residential');
+    resText.style.opacity = 0; gLabels.appendChild(resText);
+
+    // --------- Build step plan --------------------------------------------
+    const plan = [];
+
+    // Step 1: Create Infinite Node (start marker) + highlight
+    plan.push(()=>{
+      hiLeft("Create Infinite Node");
+      ensureNode(S.startNode.x, S.startNode.y, true); // active
+    });
+
+    // Step 2: Sample number of feeders = 2 → show feeder endpoint nodes first, then draw lines
+    plan.push(()=>{
+      hiLeft("Sample Number of Feeders");
+      // feeder endpoints: both ends of the two feeder segments
+      S.feeders.forEach(p=>{
+        segmentsOf(p).forEach(([a,b])=>{ ensureNode(a[0],a[1],true); ensureNode(b[0],b[1],true); });
+      });
+      // now draw the two feeder lines from the infinite node side to transformer tops
+      // start with RIGHT feeder
+      const idxR = S.edges.findIndex(e=>e.el.isSameNode(S.feeders[1].cloneNode(true)) || sameD(e.el, S.feeders[1]));
+      const idxL = S.edges.findIndex(e=>e.el.isSameNode(S.feeders[0].cloneNode(true)) || sameD(e.el, S.feeders[0]));
+      if (idxR>=0) drawEdge(S.edges[idxR]); if (idxL>=0) drawEdge(S.edges[idxL]);
+      fadeIn(resText,1);
+    });
+
+    // Step 3: Insert Start Components → show RIGHT transformer circles, then vertical under it (ensure nodes, then edge)
+    plan.push(()=>{
+      hiLeft("Insert Start Components");
+      S.tRight.forEach(c=>fadeIn(c,1));
+      // find a near-vertical under right transformer
+      const idx = findVerticalNear(1835, 1030, 1120);
+      if (idx>=0){
+        const E = S.edges[idx];
+        E.segs.forEach(([a,b])=>{ ensureNode(a[0],a[1],true); ensureNode(b[0],b[1],true); });
+        drawEdge(E);
+      }
+    });
+
+    // Step 4: show LEFT transformer + its down segment
+    plan.push(()=>{
+      hiLeft("Insert Start Components");
+      S.tLeft.forEach(c=>fadeIn(c,1));
+      const idx = findVerticalNear(1738, 1030, 1120);
+      if (idx>=0){
+        const E = S.edges[idx];
+        E.segs.forEach(([a,b])=>{ ensureNode(a[0],a[1],true); ensureNode(b[0],b[1],true); });
+        drawEdge(E);
+      }
+    });
+
+    // Step 5: “for each feeder” focus (right feeder first)
+    plan.push(()=>{ hiLeft("for each feeder"); });
+
+    // Remaining: iterate all other edges; for each: ensure both nodes, then draw.
+    S.edges.forEach((E,i)=>{
+      if (S.feeders.some(f => sameDNode(E.el, f))) return; // already drawn in step 2
+      plan.push(()=>{
+        // cycle highlight through loop items for visual rhythm
+        cycleLoopLeft();
+        E.segs.forEach(([a,b])=>{ ensureNode(a[0],a[1],true); ensureNode(b[0],b[1],true); });
+        drawEdge(E);
+        settleInactive(); // demote nodes that will not get further edges
+      });
+    });
+
+    // Final: Return Graph
+    plan.push(()=>{
+      hiLeft("Return Graph");
+      settleInactive(true);
+    });
+
+    steps = plan; stepMax.textContent = steps.length.toString(); setStep(0);
+
+    // controls
+    nextBtn.onclick = ()=>advance(1);
+    prevBtn.onclick = ()=>advance(-1);
+    window.addEventListener('keydown', (e)=>{
+      if (['ArrowRight','ArrowDown',' '].includes(e.key)){ e.preventDefault(); advance(1); }
+      if (['ArrowLeft','ArrowUp'].includes(e.key)){ e.preventDefault(); advance(-1); }
+    });
+
+  }).catch(err=>console.error('load svg failed', err));
+
+  // ---------- helpers ----------
+  function makeSVG(tag, attrs={}, text=null){
+    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (text!==null) el.textContent = text;
+    return el;
+  }
+  function fadeIn(el, to=1){ el.style.transition='opacity .25s ease'; el.style.opacity=to; }
+  function near(a,b,e=3){ return Math.abs(a-b)<=e; }
+  function pickX(el){
+    if (el.hasAttribute && el.hasAttribute('x')) return +el.getAttribute('x');
+    if (el.hasAttribute && el.hasAttribute('cx')) return +el.getAttribute('cx');
+    const d = el.getAttribute && el.getAttribute('d'); if (!d) return null;
+    const pts = extractCoords(d); return pts.length ? pts[0][0] : null;
+  }
+  function extractCoords(d){
+    const nums=(d.match(/-?\d+(\.\d+)?/g)||[]).map(Number);
+    const pts=[]; for(let i=0;i+1<nums.length;i+=2) pts.push([nums[i],nums[i+1]]);
+    return pts;
+  }
+  function extractSegments(d){
+    const pts = extractCoords(d); const segs=[];
+    for(let i=0;i+1<pts.length;i++) segs.push([pts[i], pts[i+1]]);
+    return segs;
+  }
+  function pathLenApprox(segs){ let L=0; segs.forEach(([[x1,y1],[x2,y2]])=>{ L+=Math.hypot(x2-x1,y2-y1); }); return L; }
+  function avgX(p){ const pts = extractCoords(p.getAttribute('d')||''); if(!pts.length) return 0; return pts.reduce((s,[x])=>s+x,0)/pts.length; }
+  function segmentsOf(p){ return extractSegments(p.getAttribute('d')||''); }
+  function sameDNode(a,b){ return (a.getAttribute('d')||'') === (b.getAttribute('d')||''); }
+  function sameD(el, p){ return (el.getAttribute('d')||'') === (p.getAttribute('d')||''); }
+
+  // Find an edge that is roughly vertical near given x and y-window
+  function findVerticalNear(x, y1, y2){
+    for (let i=0;i<S.edges.length;i++){
+      const E = S.edges[i];
+      for (const [[x1,yy1],[x2,yy2]] of E.segs){
+        const vx = Math.abs(x1-x) < 4 && Math.abs(x2-x) < 4;
+        const vy = (yy1>=y1-40 && yy1<=y2+40) || (yy2>=y1-40 && yy2<=y2+40);
+        if (vx && vy) return i;
+      }
+    }
+    return -1;
+  }
+
+  // ----- Node registry (single square per coordinate), show edges only if both ends are visible -----
+  function nkey(x,y){ return `${Math.round(x*10)/10},${Math.round(y*10)/10}`; }
+  function ensureNode(x,y,active=false){
+    const k = nkey(x,y);
+    let n = S.nodes.get(k);
+    if (!n){
+      // create square centered at (x,y)
+      const size = 10, half = size/2;
+      const rect = makeSVG('rect', { x:x-half, y:y-half, width:size, height:size, class:'node active' });
+      gNodes.appendChild(rect);
+      n = { x, y, el: rect, active:true };
+      S.nodes.set(k, n);
+    }
+    if (active){
+      n.active = true;
+      n.el.classList.add('active');
+      n.el.classList.remove('inactive');
+    }
+    return n;
+  }
+  function markInactiveIfNoFuture(node){
+    // if no undisplayed edge connects to this node → inactive
+    if (existsFutureEdgeFrom(node.x, node.y)) return;
+    node.active = false;
+    node.el.classList.remove('active');
+    node.el.classList.add('inactive');
+  }
+  function existsFutureEdgeFrom(x,y){
+    for (const E of S.edges){
+      if (E.drawn) continue;
+      for (const [[x1,y1],[x2,y2]] of E.segs){
+        if (Math.abs(x-x1)<3 && Math.abs(y-y1)<3) return true;
+        if (Math.abs(x-x2)<3 && Math.abs(y-y2)<3) return true;
+      }
+    }
+    return false;
+  }
+
+  function drawEdge(E){
+    if (E.drawn) return;
+    // Require both endpoint nodes visible; if not, skip (they will be ensured by caller before calling drawEdge)
+    // Prepare dash animation length
+    const len = E.len.toFixed(2);
+    E.el.style.setProperty('--len', len);
+    E.el.classList.remove('dim');
+    E.el.classList.add('draw');
+    E.drawn = true;
+  }
+
+  function settleInactive(final=false){
+    S.nodes.forEach(n=>{
+      if (final) { n.active=false; n.el.classList.remove('active'); n.el.classList.add('inactive'); }
+      else markInactiveIfNoFuture(n);
+    });
+  }
+
+  // ----- Left panel highlighting helpers -----
+  function hiLeft(label){
+    S.leftItems.forEach(g=>g.classList.remove('wf-current','wf-muted'));
+    const t = S.leftItems.find(g => (g.querySelector('text')?.textContent||'').trim() === label);
+    if (t) t.classList.add('wf-current');
+    S.leftItems.forEach(g=>{ if(g!==t) g.classList.add('wf-muted'); });
+  }
+  const loopLabels = ["Assign Feeder Structure","While active nodes:","Sample Branch Type","Apply Markov Transition","Insert Nodes and Edges,","add junctions to active nodes"];
+  let loopIdx = 0;
+  function cycleLoopLeft(){ hiLeft(loopLabels[loopIdx % loopLabels.length]); loopIdx++; }
+
+  // ----- Stepper control (replay model) -----
+  function setStep(n){
+    current = Math.max(0, Math.min(n, steps.length));
+    // reset dynamic layers
+    while (gEdges.firstChild) gEdges.removeChild(gEdges.firstChild);
+    while (gNodes.firstChild) gNodes.removeChild(gNodes.firstChild);
+    Array.from(gLabels.children).forEach(x=>x.style.opacity=0);
+    // re-append fresh edge clones (preserving original styles)
+    S.edges.forEach(e=>{
+      const el = e.el.cloneNode(true);
+      el.classList.add('dim'); el.classList.remove('draw');
+      el.style.strokeDasharray = getComputedStyle(e.el).strokeDasharray || el.getAttribute('stroke-dasharray') || '';
+      el.style.strokeDashoffset = '';
+      gEdges.appendChild(el);
+      e.el = el; e.drawn=false;
+    });
+    // hide transformers
+    [...S.tLeft, ...S.tRight].forEach(c=>c.style.opacity=0);
+    // rebuild node map empty
+    S.nodes.clear();
+
+    // replay
+    for (let i=0;i<current;i++) steps[i]();
+
+    stepNow.textContent = current.toString();
+  }
+  function advance(d){ const n=current+d; if(n<0||n>steps.length) return; setStep(n); }
+
+})();
+</script>

@@ -4,7 +4,8 @@
   title: Synthetic Topology Generation for Generalizable Machine Learning in Low Voltage Distribution Grids
   venue: SDEWES 2025 - 20th Conference on Sustainable Development of Energy, Water and Environment Systems
   authors: ["de Koster, M.", "Lehnen, P.", "Mack, P.", "Waffenschmidt, E.", "Stadler, I."]
-  thumb:
+  thumb: /assets/slides/sdewes-2025/assets/images/graph_rural.png
+  internal_url: /posts/sdewes/
   year: 2025
   date_start: 2025-10-05
   date_end: 2025-10-10
@@ -31,6 +32,9 @@
   authors: ["de Koster, M.", "Mack, P.", "Lehnen, P.", "Waffenschmidt, E.", "Stadler, I."]
   date_start: 2025-01-29
   date_end: 2025-01-30
+  abstract: Methoden zur Schätzung der Spannungsqualität in Niederspannungsnetzen werden aktuell häufig nur anhand simulierter Daten verifiziert. Um die Anwendbarkeit in der Realität sicherzustellen, überprüfen wir mehrere auf neuronalen Netzen basierende Methoden mit realen Messungen im Microgrid. Hierbei erreichen wir bei der Abschätzung der ersten 25 harmonischen Oberschwingungen trotz geringer Messgerätedichte einen mittleren quadratischen Fehler (MSE) von lediglich 1.1 × 10^−5.
+  thumb: /assets/slides/zukunftnetz-2025/microgrid.jpg
+  internal_url: /posts/zukunftnetz/
 
 - id: netzimpedanz-pq-monitoring-2024
   title: Aktuelle Methoden zur Überwachung der Spannungsqualität

@@ -1,0 +1,89 @@
+/*-- scss:uses --*/
+@use "sass:color";
+
+/*-- scss:defaults --*/
+$bodyBackground: #c0e0ff;
+$mainColor: #2a2a2a;
+$linkColor: #1769aa;
+$headingColor: #111;
+$presentation-title-slide-text-align: left;
+$presentation-h1-font-size: 3.2rem;
+$presentation-h2-font-size: 2.6rem;
+
+/* Map SCSS vars to reveal.js CSS custom properties */
+:root {
+  --r-background-color: #{$bodyBackground};
+  --r-main-color: #{$mainColor};
+  --r-link-color: #{$linkColor};
+  --r-heading-color: #{$headingColor};
+}
+
+/*-- scss:mixins --*/
+@mixin card($radius: 1rem) {
+  border-radius: $radius;
+  box-shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+
+/*-- scss:functions --*/
+@function tint($c, $amount) {
+  @return color.mix(white, $c, $amount);
+}
+
+/*-- scss:rules --*/
+.reveal {
+  section {
+    padding-top: 1px;
+    font-size: 0.75em;
+  }
+  .accent { color: var(--r-link-color); }
+
+  pre code {
+    font-size: 0.9em;
+    line-height: 1.35;
+  }
+
+  .card {
+    @include card(1.25rem);
+    background: #{tint($linkColor, 90%)};
+    padding: 1rem 1.25rem;
+  }
+}
+
+/* Bottom-of-slide sources */
+.reveal {
+  section {
+    position: relative;      /* ensure absolute positioning baseline */
+    padding-bottom: 2.2rem;  /* room for sources line */
+  }
+
+  .sources {
+    position: absolute;
+    left: 0; right: 0; bottom: 0.75rem;
+    margin: 0 0.25rem;
+    padding-top: 0.35rem;
+    border-top: 1px solid #e5e7eb;
+    font-size: 0.50em;
+    color: #666;
+    line-height: 1.25;
+    z-index: 1;
+  }
+
+  .sources a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* Optional alignment helpers */
+  .sources.center { text-align: center; }
+  .sources.right  { text-align: right; }
+}
+
+@media print {
+  .reveal .sources {
+    position: static;        /* inline for PDF/print */
+    border-top: 0;
+    padding-top: 0.2rem;
+    color: #444;
+  }
+}
