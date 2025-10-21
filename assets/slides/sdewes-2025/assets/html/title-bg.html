@@ -4,9 +4,22 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-      html, body, #host { margin:0; height:100%; width:100%; }
-      #host { position:relative; }
+      html, body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden; /* prevents scrollbars flicker */
+      }
+      #host {
+        position: fixed;
+        inset: 0; /* shorthand for top:0; right:0; bottom:0; left:0 */
+      }
+      #host > canvas {
+        position: absolute;
+        inset: 0;
+        display: block; /* prevents inline layout shifts */
+      }
     </style>
+
     <script type="module">
       import { attachGraphGrowthCanvas } from "../js/graph-growth-canvas.js";
       window.addEventListener("DOMContentLoaded", () => {
@@ -15,7 +28,9 @@
       });
     </script>
   </head>
+
   <body>
-    <div id="host" class="canvas-bg"></div>
+    <div id="host"></div>
   </body>
 </html>
+

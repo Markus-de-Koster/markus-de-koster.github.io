@@ -21,3 +21,8 @@ This project is built on the [Jekyll](https://github.com/jekyll/jekyll) ecosyste
 ```bash
 bundle exec jekyll serve
 ```
+
+## Create posts
+Jekyll image resolution for top post: 1200x630 px
+
+The research tab pulls the publication data from the `_data/publications.yml` file.

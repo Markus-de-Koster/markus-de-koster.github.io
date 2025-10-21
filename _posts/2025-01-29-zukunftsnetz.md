@@ -6,6 +6,7 @@ tags: [conference, power-quality, state-estimation, microgrid, laboratory, neura
 image: 
   path: /assets/slides/zukunftnetz-2025/microgrid.jpg
   alt: Microgrid at the Cologne University of Applied Sciences (TH Köln)
+permalink: /posts/zukunftsnetz-2025/
 ---
 
 We verified our neural-network-based state estimation algorithms in a real microgrid laboratory at TH Köln, achieving high accuracy for predictions of power quality.
