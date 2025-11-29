@@ -55,53 +55,15 @@ let currentNetworkId = null;
    DISCOVER NETWORK FOLDERS
 =========================================== */
 async function discoverNetworks() {
-  let networks = [];
-
-  // Try loading a static pre‑generated list
   try {
-    let resp = await fetch("networks.json");
+    const resp = await fetch("networks.json", { cache: "no-cache" });
     if (resp.ok) {
-      networks = await resp.json();
-      return networks;
+      return await resp.json();
     }
   } catch (e) {
+    console.error("Cannot load networks.json:", e);
   }
-
-  // If file: protocol -> cannot discover dynamically
-  if (location.protocol === "file:") {
-    alert("Browser blockiert dynamische Netzwerk‑Erkennung. Bitte legen Sie eine networks.json Datei an.");
-    return [];
-  }
-
-  // Attempt directory listing
-  try {
-    const response = await fetch(".");
-    const text = await response.text();
-    const dom = new DOMParser().parseFromString(text, "text/html");
-    const links = [...dom.querySelectorAll("a")];
-
-    for (let a of links) {
-      let href = a.getAttribute("href");
-      if (!href) continue;
-      if (href.endsWith("/") && !href.startsWith("..")) {
-        let folder = href.replace("/", "");
-        if (folder && folder !== ".") {
-          try {
-            let p = await fetch(folder + "/positions.json");
-            let e = await fetch(folder + "/edges.json");
-            let af = await fetch(folder + "/affinity.json");
-            if (p.ok && e.ok && af.ok) {
-              networks.push(folder);
-            }
-          } catch (e) {
-          }
-        }
-      }
-    }
-  } catch (e) {
-  }
-
-  return networks;
+  return [];
 }
 
 function populateNetworkDropdown(list) {
