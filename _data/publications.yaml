@@ -1,3 +1,14 @@
+- id: cired-d-a-ch-2025
+  title: Optimale Platzierung von Spannungsqualitätsmessgeräten – Ein graphentheoretischer, datenbasierter Ansatz
+  type: conference
+  venue: CIRED D-A-CH 2025 – Innovationen im Verteilernetz
+  authors: ["de Koster, M.", "Bkira, A."]
+  thumb: /assets/images/cired-dach.jpg
+  internal_url: /posts/cired-d-a-ch-2025/
+  date_start: 2025-12-01
+  date_end: 2025-12-02
+  abstract:
+
 - id: sdewes-2025
   type: conference
   kind: Archival Paper
@@ -19,7 +30,8 @@
   thumb: /assets/images/geneva.jpg
   date_start: 2025-06-16
   date_end: 2025-06-19
-  doi:
+  doi: https://doi.org/10.1049/icp.2025.1902
+  url: https://digital-library.theiet.org/doi/epdf/10.1049/icp.2025.1902
   internal_url: /posts/cired-2025/
   pdf:
   code:

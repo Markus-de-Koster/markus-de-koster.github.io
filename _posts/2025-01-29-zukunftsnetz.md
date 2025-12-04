@@ -1,5 +1,5 @@
 ---
-title: Tagung Zukünftige Stromnetze - Berlin 
+title: State Estimation in the Lab – Tagung Zukünftige Stromnetze, Berlin 
 date: 2025-01-29 10:00:00
 categories: [research, conferences]
 tags: [conference, power-quality, state-estimation, microgrid, laboratory, neural-networks, physics-informed]     # TAG names should always be lowercase

@@ -35,3 +35,31 @@ The use of our website is generally possible without providing personal data. Wh
 
 ### [de] Datenschutz
 Die Nutzung unserer Webseiten ist in der Regel ohne Angabe personenbezogener Daten möglich. Soweit auf unseren Seiten personenbezogene Daten (z. B. Name, Anschrift oder E-Mail-Adressen) erhoben werden, erfolgt dies, soweit möglich, stets auf freiwilliger Basis. Diese Daten werden ohne ausdrückliche Zustimmung nicht an Dritte weitergegeben.
+
+### [en] External Resources and Embedded Content
+Some pages of this website include embedded content or functions that are loaded from external servers operated by content-delivery networks or other third-party providers. Such resources are only loaded after you have granted consent.
+When external content is loaded, the corresponding providers receive your IP address and technical information necessary to deliver the content to your browser. These providers may also use their own cookies, tracking technologies, or server-side logs; such processing lies outside the control of this website’s operator and is carried out under the responsibility of the respective third-party provider.
+To remember whether you have granted or refused consent, this website stores a preference value in your browser’s localStorage. This storage is strictly necessary for providing the consent mechanism and is not used for analytics or tracking.
+
+The following third-party resources may be requested when loading embedded content:
+- Tailwind CSS (CDN distribution of styling resources)
+- Plotly (CDN distribution of visualisation scripts)
+- D3.js (CDN distribution of visualisation scripts)
+- Google Fonts (CDN distribution of font resources)
+- JSDelivr (CDN distribution of JavaScript libraries)
+
+This list is updated when new external providers are integrated.
+
+### [de] Externe Ressourcen und eingebundene Inhalte
+Einige Seiten dieser Website binden Inhalte oder Funktionen ein, die von externen Servern, insbesondere von Content-Delivery-Netzwerken oder anderen Drittanbietern, geladen werden. Diese Ressourcen werden erst nach Ihrer Einwilligung geladen.
+Beim Abruf solcher Inhalte erhalten die jeweiligen Drittanbieter Ihre IP-Adresse sowie technisch erforderliche Informationen zur Auslieferung des Inhalts an Ihren Browser. Diese Drittanbieter können eigene Cookies, Tracking-Technologien oder Server-Protokolle einsetzen; deren Nutzung liegt außerhalb des Einflussbereichs des Betreibers dieser Website und erfolgt in Verantwortung des jeweiligen Drittanbieters.
+Zur Speicherung Ihrer Einwilligungsentscheidung wird ein Präferenzwert im localStorage Ihres Browsers abgelegt. Diese Speicherung ist technisch unbedingt erforderlich, um den Einwilligungsmechanismus bereitzustellen, und dient nicht zu Tracking- oder Analysezwecken.
+
+Beim Laden eingebundener Inhalte können folgende Dienste Dritter genutzt werden:
+- Tailwind CSS (CDN-Bereitstellung von Stilressourcen)
+- Plotly (CDN-Bereitstellung von Visualisierungsskripten)
+- D3.js (CDN-Bereitstellung von Visualisierungsskripten)
+- Google Fonts (CDN-Bereitstellung von Schriftressourcen)
+- JSDelivr (CDN-Bereitstellung von JavaScript-Bibliotheken)
+
+Diese Liste wird aktualisiert, sobald weitere externe Dienste eingebunden werden.
